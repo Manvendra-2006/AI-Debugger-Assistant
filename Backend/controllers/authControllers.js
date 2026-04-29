@@ -10,7 +10,7 @@ export async function SignUp(req,resp){
         }
         const user = await User.findOne({email})
         if(user){
-            return resp.status(404).json({message:"User is already exists"})
+            return resp.status(409).json({message:"User already exists"})
         }
         const hashPassword = await bcrypt.hash(password,10)
         if(!hashPassword){
@@ -40,7 +40,7 @@ export async function Login(req,resp){
         }
         const ishashPassword = await bcrypt.compare(password,userExists.password)
         if(!ishashPassword){
-            return resp.status(404).json({message:"Password is not matched"})
+            return resp.status(401).json({message:"Invalid password"})
         }
         const token = await jwt.sign(
             {id:userExists._id,name:userExists.name},
@@ -48,7 +48,7 @@ export async function Login(req,resp){
             {expiresIn:'7d'}
         )
         resp.cookie("token",token)
-        return  resp.status(201).json({message:"Login Sucessfully",token,userExists})
+        return  resp.status(200).json({message:"Login Successfully",token,userExists})
     }
     catch(error){
         return resp.status(500).json({message:"Internal Server Error",error})
@@ -62,9 +62,9 @@ export async function LogoutController(req,resp){
             return resp.status(404).json({message:"token required"})
         }
         const blacklistData = await blackList.create({token})        
-        if(blackListData){
+        if(blacklistData){
             resp.clearCookie("token")
-            return resp.status(500).json({message:"Token is blacklisted"})
+            return resp.status(200).json({message:"Logged out successfully"})
         }
     }
     catch(error){
@@ -75,9 +75,9 @@ export async function LogoutController(req,resp){
 export async function getMe(req,resp){
     try{
         const userData = await User.findById(req.user.id)
-        return resp.status(201).json({message:"Data is fetched Successfully",userData})
+        return resp.status(200).json({message:"Data is fetched Successfully",userData})
     }
     catch(error){
-        return resp.status(500).json("Internal Server Error",error)
+        return resp.status(500).json({message:"Internal Server Error",error})
     }
 }

@@ -5,6 +5,6 @@ const BlackListData = mongoose.Schema({
         required:true
     }
 },{
-    timeStamps:true
+    timestamps:true
 })
 export default mongoose.model("blacklist",BlackListData)
