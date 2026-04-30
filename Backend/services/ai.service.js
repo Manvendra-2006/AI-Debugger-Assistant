@@ -79,7 +79,7 @@ console.log("\n===== CLEAN CODE =====\n");
 console.log(cleanCode);
 
 // return bhi kar do (API ke liye useful)
-return finalOutput;
+return cleanCode;
   } catch (error) {
     console.log("Error:", error.message);
   }
