@@ -15,43 +15,68 @@ const codeSchema = z.object({
 async function invokeGrokII(code) {
   try {
 const prompt = `
-Analyze the following JavaScript code and identify bugs or issues.
+You are an expert JavaScript debugger.
 
-Return response strictly in JSON format with EXACTLY these fields:
+Analyze the following JavaScript code and find:
+- syntax errors
+- runtime errors
+- logical bugs
+- missing arguments
+- undefined values
+- bad practices
+
+Return response strictly in valid JSON format with EXACTLY these fields:
 {
   "issues": ["list of bugs/errors"],
   "fixes": ["list of fixes"],
-  "correctedCode": "full corrected code",
+  "correctedCode": "full corrected JavaScript code",
   "explanation": "short explanation"
 }
 
-Rules:
+Strict Rules:
 - correctedCode must be COMPLETE working JavaScript code.
-- Keep correctedCode properly formatted with indentation.
-- Do NOT use string concatenation like '...' + '...'.
-- Do NOT wrap code in triple backticks.
+- correctedCode must be directly runnable after copying.
+- correctedCode must NOT be the same as input code if any issue exists.
+- NEVER return the original code unchanged when issues are found.
+- If a function parameter can become undefined, fix it using default value or validation.
+- If a function is called with missing arguments, fix the function or the function call.
+- Missing arguments that cause undefined values MUST be fixed.
+- Do NOT wrap correctedCode in triple backticks.
 - Do NOT add markdown formatting.
-- Keep output clean and readable.
-- Do not add extra fields.
+- Do NOT add extra fields.
+- Return only JSON.
 
-Important:
-- correctedCode should be valid JavaScript that can run directly after copying.
-- Ensure proper error handling and best practices.
+Example:
+Input:
+function addNumbers(a, b) {
+  return a + b
+}
 
-Code:
+console.log(addNumbers(5))
+
+Correct correctedCode:
+function addNumbers(a, b = 0) {
+  return a + b;
+}
+
+console.log(addNumbers(5));
+
+Now analyze this code:
+
 ${typeof code === "string" ? code : JSON.stringify(code)}
 `;
 
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
+   const response = await groq.chat.completions.create({
+  model: "llama-3.3-70b-versatile",
+  temperature: 0,
+  messages: [
+    {
+      role: "user",
+      content: prompt
+    }
+  ],
+  response_format: { type: "json_object" }
+})
 
 const result = response.choices[0].message.content;
 const data = JSON.parse(result);
@@ -79,7 +104,7 @@ console.log("\n===== CLEAN CODE =====\n");
 console.log(cleanCode);
 
 // return bhi kar do (API ke liye useful)
-return cleanCode;
+return finalOutput;
   } catch (error) {
     console.log("Error:", error.message);
   }
