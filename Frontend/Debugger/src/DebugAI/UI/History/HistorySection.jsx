@@ -53,7 +53,7 @@ const HistorySection = ({ history = [], loading, error, onRefresh }) => {
           borderRadius: 8,
           color: '#f87171'
         }}>
-          ❌ {error}
+           {error}
         </div>
       ) : loading ? (
         <div style={{

@@ -12,21 +12,21 @@ const HistoryPage = () => {
   const fetchHistory = async () => {
     setLoading(true)
     setError(null)
-    setHistory([]) // Clear history while loading
+    setHistory([]) 
     
     try {
       console.log('📥 Fetching debug history from API...')
       const data = await getDebugHistory()
       
-      // Ensure we only set valid array data
+    
       const validData = Array.isArray(data) ? data : []
       
-      console.log(`✅ History fetched successfully. Total records: ${validData.length}`)
-      console.log('📊 History data:', validData)
+      console.log(` History fetched successfully. Total records: ${validData.length}`)
+      console.log(' History data:', validData)
       
       setHistory(validData)
     } catch (err) {
-      console.error('❌ Error fetching history:', err)
+      console.error('Error fetching history:', err)
       setError('Unable to load history')
       setHistory([]) // Clear history on error
     } finally {

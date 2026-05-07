@@ -81,29 +81,18 @@ ${typeof code === "string" ? code : JSON.stringify(code)}
 const result = response.choices[0].message.content;
 const data = JSON.parse(result);
 
-// clean correctedCode
 let cleanCode = "";
 if (data.correctedCode) {
   cleanCode = data.correctedCode
     .replace(/\\n/g, '\n')
     .replace(/\\"/g, '"');
 }
-
-// 🔥 Final combined output
 const finalOutput = {
   ...data,
   correctedCode: cleanCode
 };
-
-// pretty print sab ek saath
-console.log("===== FINAL OUTPUT =====");
 console.log(JSON.stringify(finalOutput, null, 2));
-
-// agar sirf code alag dekhna ho
-console.log("\n===== CLEAN CODE =====\n");
 console.log(cleanCode);
-
-// return bhi kar do (API ke liye useful)
 return finalOutput;
   } catch (error) {
     console.log("Error:", error.message);
