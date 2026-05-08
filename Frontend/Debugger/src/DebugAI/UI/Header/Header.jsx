@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../../Auth/hooks/useAuth'
+import { toast } from 'react-toastify'
 
 const Header = () => {
   const { user, handleLogout, loading } = useAuth()
@@ -173,6 +174,7 @@ const Header = () => {
               type="button"
               onClick={() => {
                 handleLogout()
+                toast.success('You have been logged out successfully.')
                 setShowDetails(false)
               }}
               disabled={loading}

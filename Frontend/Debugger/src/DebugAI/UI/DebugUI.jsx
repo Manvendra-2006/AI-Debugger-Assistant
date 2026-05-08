@@ -2,6 +2,7 @@
 import { useDebug } from '../hooks/useDebug'
 import Header from './Header/Header'
 import TheoryExplanation from './TheoryExplanation'
+import { toast } from 'react-toastify'
 
 const STORAGE_KEY = 'ai-debugger-state'
 
@@ -38,6 +39,7 @@ const DebugUI = () => {
     const data = await handleDebugAI({ code: inputCode })
     if (data) {
       setView('result')
+      toast.success('Code debugged successfully! Check your corrected output.')
     }
   }
 

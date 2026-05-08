@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { toast } from 'react-toastify'
 
 const SignUp = () => {
     const navigate = useNavigate()
@@ -49,6 +50,7 @@ const SignUp = () => {
                 email: formData.email,
                 password: formData.password
             })
+            toast.success('Account created successfully! Please log in.')
             navigate("/login")
         } catch (err) {
             setError('Registration failed. Please try again.')

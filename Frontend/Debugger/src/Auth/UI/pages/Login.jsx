@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { toast } from 'react-toastify'
 
 const Login = () => {
     const navigate = useNavigate()
@@ -31,6 +32,7 @@ const Login = () => {
                 email: formData.email,
                 password: formData.password
             })
+            toast.success('Welcome back! You are now logged in.')
             navigate("/")
         } catch (err) {
             setError('Login failed. Please check your credentials.')
