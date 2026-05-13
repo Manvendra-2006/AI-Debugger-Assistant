@@ -1,8 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../state/auth.context";
 import { DebugContext } from "../../DebugAI/state/debug.context";
-import { login, logout, register } from "../services/auth.api";
-
+import { login, logout, register, googleLogin } from "../services/auth.api";
 export function useAuth() {
     const context = useContext(AuthContext)
     const { user, setuser, loading, setloading } = context
@@ -83,6 +82,28 @@ export function useAuth() {
         }
 
     }
+    async function handleGoogleLogin({ uid, name, email, photoURL }) {
+    setloading(true)
+    try {
+        clearAppStorage()
 
-    return { user, handleLogin, handleLogout, handleRegister, loading }
+        const data = await googleLogin({
+            uid,
+            name,
+            email,
+            photoURL
+        })
+
+        setuser(data.userExists)
+        console.log(data.userExists)
+    }
+    catch (error) {
+        console.log(error)
+    }
+    finally {
+        setloading(false)
+    }
+}
+
+    return { user, handleLogin, handleLogout, handleRegister, loading  , handleGoogleLogin}
 }

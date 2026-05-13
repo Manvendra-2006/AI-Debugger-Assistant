@@ -39,3 +39,18 @@ export async function getMe(){
         console.log("Error Occured",error)
     }
 }
+
+export async function googleLogin({ uid, name, email, photoURL }) {
+    try {
+        const response = await api.post("/auth/google", {
+            uid,
+            name,
+            email,
+            photoURL
+        })
+        return response.data
+    }
+    catch (error) {
+        console.log("Error Occured", error)
+    }
+}

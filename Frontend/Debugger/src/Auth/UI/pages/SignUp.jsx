@@ -2,10 +2,15 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { toast } from 'react-toastify'
+import { useFirebase } from '../../../Firebase/FireBaseProvider'
+import api from '../../../../axios'
 
 const SignUp = () => {
+    console.log("render")
     const navigate = useNavigate()
-    const { loading, handleRegister } = useAuth()
+     const { loading, handleLogin, handleGoogleLogin } = useAuth()
+    const firebase = useFirebase()
+    
     const [formData, setformData] = useState({
         name: "",
         email: "",
@@ -24,7 +29,27 @@ const SignUp = () => {
         setConfirmPassword(e.target.value)
         if (error) setError('')
     }
+   const signupwithgoogle = async () => {
+    try {
+        const result = await firebase.googleAuth()
 
+        const user = result.user
+
+        await handleGoogleLogin({
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+        })
+
+        toast.success("Google login successful")
+        navigate("/")
+    }
+    catch (error) {
+        console.log("Error occured", error)
+        toast.error("Google login failed")
+    }
+}
     async function handleSubmit(e) {
         e.preventDefault()
         setError('')
@@ -302,6 +327,23 @@ const SignUp = () => {
                     >
                         {loading ? 'Creating Account...' : 'Create Account'}
                     </button>
+<button
+  type="button"
+  onClick={signupwithgoogle}
+  style={{
+    width: "100%",
+    padding: "14px 24px",
+    borderRadius: 12,
+    border: "1px solid white",
+    background: "#fff",
+    color: "#111827",
+    fontSize: "1rem",
+    fontWeight: 700,
+    cursor: "pointer"
+  }}
+>
+  Sign up with Google
+</button>
                 </form>
 
                 <div style={{
@@ -329,7 +371,9 @@ const SignUp = () => {
                         >
                             Sign in here
                         </Link>
+                       
                     </p>
+
                 </div>
             </div>
         </div>
