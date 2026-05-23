@@ -2,7 +2,7 @@ import User from "../models/User.js"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import blackList from "../models/blackList.js"
-import sendRegistrationEmail from "../services/email.service.js"
+// import sendRegistrationEmail from "../services/email.service.js"
 export async function SignUp(req, resp) {
     try {
         const { name, email, password } = req.body
@@ -24,7 +24,7 @@ export async function SignUp(req, resp) {
             authProvider: "local"
         })
 
-        await sendRegistrationEmail(email, name)
+        // await sendRegistrationEmail(email, name)
 
         return resp.status(201).json({
             message: "User registered Successfully",
@@ -148,4 +148,4 @@ export async function getMe(req,resp){
     catch(error){
         return resp.status(500).json({message:"Internal Server Error",error})
     }
-}
+}   

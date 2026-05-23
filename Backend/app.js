@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import debugRouter from './routes/debugRoutes.js'
 import path from 'path'
+import fileRouter from './routes/fileroutes.js'
 const app = express()
 const _dirname = path.resolve()
 
@@ -15,6 +16,7 @@ app.use(cors({
 app.use(express.json())
 app.use("/api/auth",authRouter)
 app.use("/api/debug",debugRouter)
+app.use("/api/files",fileRouter)
 app.use(express.static(path.join(_dirname,"/Frontend/Debugger/dist")))
 app.get('/*splat',(req,resp)=>{
     resp.sendFile(path.resolve(_dirname,"Frontend","Debugger","dist","index.html"))
