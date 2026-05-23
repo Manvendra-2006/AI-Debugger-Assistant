@@ -4,13 +4,14 @@
 
 ![AI Debugger](https://img.shields.io/badge/AI-Powered-blueviolet?style=for-the-badge&logo=openai)
 ![MERN Stack](https://img.shields.io/badge/Stack-MERN-green?style=for-the-badge&logo=mongodb)
-![Grok AI](https://img.shields.io/badge/LLM-Grok%20AI-black?style=for-the-badge&logo=x)
+![Groq AI](https://img.shields.io/badge/LLM-Groq%20AI-black?style=for-the-badge)
+![MCP](https://img.shields.io/badge/Protocol-MCP-blue?style=for-the-badge)
 ![Firebase](https://img.shields.io/badge/Auth-Firebase-orange?style=for-the-badge&logo=firebase)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
-**An intelligent debugging assistant powered by Grok AI that helps developers identify, understand, and fix code errors in real time.**
+**An intelligent debugging assistant powered by Groq AI that autonomously inspects, analyzes, and fixes code errors using MCP (Model Context Protocol) tools.**
 
-[Features](#-features) • [Tech Stack](#-tech-stack) • [Folder Structure](#-folder-structure) • [Getting Started](#-getting-started) • [API Docs](#-api-endpoints)
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Architecture](#-architecture) • [MCP Server](#-mcp-server) • [Getting Started](#-getting-started) • [API Docs](#-api-endpoints)
 
 </div>
 
@@ -18,9 +19,10 @@
 
 ## ✨ Features
 
-- 🤖 **AI-Powered Debugging** — Paste your error/code and get instant AI-generated analysis and fixes via Grok AI
-- 📖 **Theory Explanation** — Get in-depth explanations of why an error occurred, not just the fix
-- 🕓 **Debug History** — All your past debug sessions are saved and accessible anytime
+- 🤖 **AI-Powered Debugging** — Upload your project as a ZIP and get autonomous AI debugging via Groq AI
+- 🔧 **MCP Tool Integration** — AI agent uses real tools to list files, read code, run commands, and fix bugs
+- 🧠 **Autonomous Agent Loop** — AI debugs step-by-step without manual intervention
+- 🕓 **Debug History** — All past debug sessions saved and accessible anytime
 - 🔐 **JWT Authentication** — Secure login/signup with token blacklisting on logout
 - 🔵 **Google Sign-In** — One-click authentication via Firebase Google OAuth 2.0
 - 🛡️ **Protected Routes** — Both frontend and backend route guards
@@ -35,10 +37,20 @@
 |---|---|
 | **Node.js + Express** | REST API server |
 | **MongoDB + Mongoose** | Database & ODM |
-| **Grok AI (xAI)** | AI inference for debugging |
+| **Groq AI** | LLM inference for autonomous debugging |
+| **MCP SDK** | Model Context Protocol client for tool calling |
+| **Multer + AdmZip** | ZIP file upload and extraction |
 | **JWT** | Authentication & authorization |
 | **bcryptjs** | Password hashing |
 | **firebase-admin** | Server-side Firebase ID token verification |
+
+### MCP Server
+| Technology | Purpose |
+|---|---|
+| **Node.js + Express** | MCP Server host |
+| **MCP SDK (SSE)** | Server-Sent Events transport for AI tool calls |
+| **Zod** | Tool input schema validation |
+| **Custom Tools** | listFiles, readFile, searchCodebase, runCommand, analyzeLogs, writeFile |
 
 ### Frontend
 | Technology | Purpose |
@@ -48,6 +60,7 @@
 | **Axios** | HTTP client |
 | **React Context API** | Global state management |
 | **Firebase Auth** | Google OAuth 2.0 — signInWithPopup + GoogleAuthProvider |
+| **react-markdown** | Render AI markdown responses |
 
 ---
 
@@ -57,195 +70,198 @@
 AI-Debugger-Assistant/
 │
 ├── 📂 Backend/
+│   ├── agent/
+│   │   └── agent.js               # Autonomous AI agent loop (Groq + MCP tools)
 │   ├── config/
 │   │   └── db.js                  # MongoDB connection setup
 │   ├── controllers/
 │   │   ├── authControllers.js     # Register, Login, Google Auth, Logout logic
-│   │   └── debugController.js     # AI debug request handler
+│   │   └── fileController.js      # ZIP upload, extraction, agent trigger
 │   ├── middleware/
 │   │   └── auth.middleware.js     # JWT verification middleware
 │   ├── models/
-│   │   ├── User.js                # User schema (name, email, password, googleId)
-│   │   ├── Debug.js               # Debug session schema
+│   │   ├── User.js                # User schema
 │   │   └── blackList.js           # Token blacklist schema
 │   ├── routes/
 │   │   ├── authRoutes.js          # /api/auth routes
-│   │   └── debugRoutes.js         # /api/debug routes
-│   ├── services/
-│   │   ├── ai.service.js          # Grok AI integration logic
-│   │   └── temp.js                # Temporary/utility helpers
-│   ├── app.js                     # Express app setup & middleware
+│   │   └── fileRoutes.js          # /api/files routes
+│   ├── utils/
+│   │   └── unzipProject.js        # AdmZip extraction utility
+│   ├── extracted-projects/        # Temp folder for extracted ZIPs
+│   ├── uploads/                   # Temp folder for uploaded ZIPs
+│   ├── nodemon.json               # Nodemon ignore config
 │   ├── server.js                  # Server entry point
+│   └── package.json
+│
+├── 📂 MCP Server/
+│   ├── tools/
+│   │   ├── listfiles.js           # List all files in a directory
+│   │   ├── readFile.js            # Read file content
+│   │   ├── searchCodebase.js      # Search keyword across project files
+│   │   ├── runCommand.js          # Run terminal commands in project
+│   │   ├── analyzeLogs.js         # Analyze runtime logs and errors
+│   │   └── writeFile.js           # Write or update project files
+│   ├── index.js                   # MCP Server entry (SSE transport)
 │   └── package.json
 │
 └── 📂 Frontend/Debugger/
     ├── src/
     │   ├── Auth/
-    │   │   ├── UI/
-    │   │   │   ├── components/
-    │   │   │   │   ├── LoadingPage.jsx    # Global loading spinner
-    │   │   │   │   └── Protected.jsx      # Auth route guard
-    │   │   │   └── pages/
-    │   │   │       ├── Login.jsx          # Login page (Email + Google button)
-    │   │   │       └── SignUp.jsx         # Registration page (Email + Google button)
-    │   │   ├── hooks/
-    │   │   │   └── useAuth.js             # Auth custom hook
+    │   │   ├── UI/pages/
+    │   │   │   ├── Login.jsx
+    │   │   │   └── SignUp.jsx
+    │   │   ├── hooks/useAuth.js
     │   │   ├── services/
-    │   │   │   ├── auth.api.js            # Auth API calls (login/signup/google)
-    │   │   │   └── firebase.js            # Firebase app init + GoogleAuthProvider
-    │   │   └── state/
-    │   │       └── auth.context.jsx       # Auth global state (Context)
-    │   │
+    │   │   │   ├── auth.api.js
+    │   │   │   └── firebase.js
+    │   │   └── state/auth.context.jsx
     │   ├── DebugAI/
     │   │   ├── UI/
-    │   │   │   ├── Header/
-    │   │   │   │   └── Header.jsx         # Top navigation bar
-    │   │   │   ├── History/
-    │   │   │   │   ├── HistoryPage.jsx    # Full history view page
-    │   │   │   │   └── HistorySection.jsx # History sidebar/section
-    │   │   │   ├── DebugUI.jsx            # Main debugger interface
-    │   │   │   └── TheoryExplanation.jsx  # AI explanation display
-    │   │   ├── hooks/
-    │   │   │   └── useDebug.js            # Debug custom hook
-    │   │   ├── services/
-    │   │   │   └── ai.api.js              # Debug API calls
-    │   │   └── state/
-    │   │       └── debug.context.jsx      # Debug global state (Context)
-    │   │
-    │   ├── App.jsx                        # Root component & routing
-    │   └── main.jsx                       # React DOM entry point
-    │
-    ├── axios.js                           # Axios instance with base URL
-    ├── index.html
+    │   │   │   ├── DebugUI.jsx
+    │   │   │   └── Header/Header.jsx
+    │   │   ├── hooks/useDebug.js
+    │   │   ├── services/ai.api.js
+    │   │   └── state/debug.context.jsx
+    │   ├── App.jsx
+    │   └── main.jsx
+    ├── axios.js
+    ├── vercel.json
     ├── vite.config.js
-    ├── package.json
-    └── .gitignore
+    └── package.json
 ```
+
+---
+
+## 🏗 Architecture
+
+```
+User uploads ZIP + Prompt
+        ↓
+  Frontend (React)
+        ↓
+  POST /api/files/upload (Multer)
+        ↓
+  AdmZip extracts project
+        ↓
+  Agent Loop starts (Groq AI)
+        ↓
+  AI calls MCP Tools via SSE
+        ↓
+┌─────────────────────────┐
+│       MCP Server        │
+│  ┌─────────────────┐    │
+│  │   listFiles     │    │
+│  │   readFile      │    │
+│  │ searchCodebase  │    │
+│  │   runCommand    │    │
+│  │  analyzeLogs    │    │
+│  │   writeFile     │    │
+│  └─────────────────┘    │
+└─────────────────────────┘
+        ↓
+  AI analyzes results → fixes bugs
+        ↓
+  Final response returned to Frontend
+        ↓
+  Rendered as Markdown (react-markdown)
+```
+
+---
+
+## 🔧 MCP Server
+
+The MCP (Model Context Protocol) Server exposes a set of tools that the AI agent uses to autonomously debug projects. It communicates with the Backend via **SSE (Server-Sent Events)**.
+
+### How it works
+
+```
+Backend (MCP Client)  ←──SSE──→  MCP Server (Tools)
+        │
+        ▼
+  AI Agent calls tool
+        │
+        ▼
+  MCP Server executes tool on extracted project
+        │
+        ▼
+  Result returned to AI Agent
+        │
+        ▼
+  AI decides next action (or returns final answer)
+```
+
+### Available Tools
+
+| Tool | Description |
+|---|---|
+| `listFiles` | List all files and folders in a directory |
+| `readFile` | Read the content of any project file |
+| `searchCodebase` | Search for a keyword across all project files |
+| `runCommand` | Execute terminal commands inside the project (e.g. `npm install`, `node index.js`) |
+| `analyzeLogs` | Analyze runtime error logs and identify root causes |
+| `writeFile` | Write or update a file to apply a fix |
+
+### Debugging Workflow (Agent Loop)
+
+```
+1. listFiles       → Understand project structure
+2. searchCodebase  → Find relevant code
+3. readFile        → Read important files
+4. runCommand      → Run the project / reproduce the error
+5. analyzeLogs     → Analyze runtime output
+6. writeFile       → Apply the fix
+7. Return          → Final explanation to user
+```
+
+> The agent loop runs up to **20 tool calls** before returning a final answer.
+
+### MCP Transport
+
+The MCP Server uses **SSE (Server-Sent Events)** transport:
+
+- `GET /sse` — Backend connects here to establish SSE session
+- `POST /messages?sessionId=...` — AI tool calls are sent here
 
 ---
 
 ## 🔐 Authentication Flow
 
-This app supports **two login methods** — both result in the same JWT session.
-
----
-
 ### 1️⃣ Email / Password Auth
 
 ```
-REGISTER
-────────
-User submits name, email, password
-        │
-        ▼
-bcryptjs.hash(password, 10) → saved to MongoDB
-        │
-        ▼
-Redirect to Login
-
-LOGIN
-─────
 User submits email + password
-        │
-        ▼
-User.findOne({ email }) → bcryptjs.compare(password, hash)
-        │
-        ▼
-jwt.sign({ userId }, JWT_SECRET, { expiresIn })
-        │
-        ▼
-JWT returned in response → auth.context.jsx updated
+        ↓
+bcryptjs.compare(password, hash)
+        ↓
+jwt.sign({ userId }, JWT_SECRET)
+        ↓
+JWT returned → auth.context.jsx updated
 ```
-
----
 
 ### 2️⃣ Google Sign-In (Firebase)
 
 ```
-User clicks "Sign in with Google"
-        │
-        ▼
-Firebase SDK → signInWithPopup(auth, new GoogleAuthProvider())
-        │
-        ▼
-Google OAuth popup → user selects account & consents
-        │
-        ▼
-Firebase returns → user.accessToken  (Firebase ID Token)
-        │
-        ▼
-Frontend sends → POST /api/auth/google
-  { idToken: "Firebase ID token" }
-        │
-        ▼
-Backend → firebase-admin.auth().verifyIdToken(idToken)
-        │
-        ▼
-User.findOrCreate({ email }) in MongoDB
-  ├── Existing user → skip creation
-  └── New Google user → save { name, email, googleId } (no password)
-        │
-        ▼
-jwt.sign({ userId }, JWT_SECRET, { expiresIn })
-        │
-        ▼
-JWT returned → same session flow as email/password
+Firebase signInWithPopup → Google OAuth
+        ↓
+Firebase ID Token returned
+        ↓
+POST /api/auth/google { idToken }
+        ↓
+firebase-admin.verifyIdToken(idToken)
+        ↓
+User.findOrCreate in MongoDB
+        ↓
+JWT returned → same session flow
 ```
 
----
-
-### 🔒 Protected Request (Both Methods)
+### 🚪 Logout
 
 ```
-Client hits any protected route
-        │
-        ▼
-auth.middleware.js
-  ├── Extract JWT from Authorization header
-  ├── jwt.verify(token, JWT_SECRET) → valid & not expired?
-  ├── blackList.findOne({ token }) → not revoked?
-  └── req.user = decoded payload → call next()
-```
-
----
-
-### 🚪 Logout (Both Methods)
-
-```
-Token extracted from Authorization header
-        │
-        ▼
-Token saved to blackList collection (MongoDB)
-        │
-        ▼
-Firebase: auth.signOut() called on client (Google users)
-        │
-        ▼
-All future requests with this token → 401 Unauthorized
-```
-
----
-
-## 🔄 Application Flow
-
-```
-User Inputs Code/Error
+Token saved to blackList (MongoDB)
         ↓
-  Frontend (DebugUI)
+Firebase auth.signOut() on client
         ↓
-  Axios → POST /api/debug/analyze
-        ↓
-  auth.middleware (JWT Verify)
-        ↓
-  debugController → ai.service.js
-        ↓
-  Grok AI API (xAI)
-        ↓
-  Response: Fix + Theory Explanation
-        ↓
-  Saved to MongoDB (Debug model)
-        ↓
-  Displayed in TheoryExplanation.jsx
+All future requests → 401 Unauthorized
 ```
 
 ---
@@ -256,28 +272,16 @@ User Inputs Code/Error
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|:---:|
-| `POST` | `/register` | Register a new user (email/password) | ❌ |
-| `POST` | `/login` | Login and get JWT token | ❌ |
-| `POST` | `/google` | Verify Firebase ID token → issue JWT | ❌ |
+| `POST` | `/register` | Register new user | ❌ |
+| `POST` | `/login` | Login and get JWT | ❌ |
+| `POST` | `/google` | Firebase Google auth | ❌ |
 | `POST` | `/logout` | Logout and blacklist token | ✅ |
 
-**POST `/api/auth/google` — Request** (`application/json`):
-
-```json
-{
-  "idToken": "Firebase ID token returned from signInWithPopup"
-}
-```
-
----
-
-### 🐛 Debug Routes — `/api/debug`
+### 📁 File Routes — `/api/files`
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|:---:|
-| `POST` | `/analyze` | Submit code/error for AI analysis | ✅ |
-| `GET` | `/history` | Get all past debug sessions | ✅ |
-| `DELETE` | `/history/:id` | Delete a specific debug session | ✅ |
+| `POST` | `/upload` | Upload ZIP + prompt → AI debug | ✅ |
 
 ---
 
@@ -287,10 +291,8 @@ User Inputs Code/Error
 
 - Node.js `v18+`
 - MongoDB (local or Atlas)
-- Grok AI API Key from [x.ai](https://x.ai)
+- Groq API Key from [console.groq.com](https://console.groq.com)
 - Firebase Project — [Firebase Console](https://console.firebase.google.com/)
-
----
 
 ### 1. Clone the Repository
 
@@ -299,16 +301,15 @@ git clone https://github.com/your-username/ai-debugger-assistant.git
 cd ai-debugger-assistant
 ```
 
----
+### 2. MCP Server Setup
 
-### 2. Firebase Setup
+```bash
+cd "MCP Server"
+npm install
+npm run dev
+```
 
-1. Go to [Firebase Console](https://console.firebase.google.com/) → Create or select a project
-2. **Authentication** → Sign-in method → Enable **Google**
-3. **Project Settings → General** → Add a Web App → copy the Firebase config (for frontend `.env`)
-4. **Project Settings → Service Accounts** → Generate new private key → download JSON (for backend `.env`)
-
----
+> MCP Server runs at `http://localhost:4000`
 
 ### 3. Backend Setup
 
@@ -320,24 +321,18 @@ npm install
 Create `Backend/.env`:
 
 ```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-GROK_API_KEY=your_grok_ai_api_key
-
-# Firebase Admin SDK (from downloaded service account JSON)
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_CLIENT_EMAIL=your_client_email
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+PORT=3000
+MONGO_URL=your_mongodb_connection_string
+JWT_TOKEN=your_jwt_secret_key
+GROQ_API_KEY=your_groq_api_key
+MCP_SERVER_URL=http://localhost:4000
 ```
 
 ```bash
 npm run dev
 ```
 
-> Server runs at `http://localhost:5000`
-
----
+> Backend runs at `http://localhost:3000`
 
 ### 4. Frontend Setup
 
@@ -349,6 +344,7 @@ npm install
 Create `Frontend/Debugger/.env`:
 
 ```env
+VITE_API_URL=http://localhost:3000/api
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -359,51 +355,43 @@ VITE_FIREBASE_APP_ID=your_app_id
 npm run dev
 ```
 
-> App runs at `http://localhost:5173`
-
-Make sure `vite.config.js` has the proxy configured:
-
-```js
-server: {
-  proxy: {
-    '/api': 'http://localhost:5000'
-  }
-}
-```
+> Frontend runs at `http://localhost:5173`
 
 ---
 
-## 🌐 Environment Variables Summary
+## 🌐 Environment Variables
 
-| Variable | Location | Description |
-|----------|----------|-------------|
-| `PORT` | Backend `.env` | Express server port |
-| `MONGO_URI` | Backend `.env` | MongoDB connection string |
-| `JWT_SECRET` | Backend `.env` | Secret key for JWT signing |
-| `GROK_API_KEY` | Backend `.env` | xAI Grok API key |
-| `FIREBASE_PROJECT_ID` | Backend `.env` | Firebase Admin — project ID |
-| `FIREBASE_CLIENT_EMAIL` | Backend `.env` | Firebase Admin — client email |
-| `FIREBASE_PRIVATE_KEY` | Backend `.env` | Firebase Admin — private key |
-| `VITE_FIREBASE_API_KEY` | Frontend `.env` | Firebase Web SDK — API key |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Frontend `.env` | Firebase Web SDK — auth domain |
-| `VITE_FIREBASE_PROJECT_ID` | Frontend `.env` | Firebase Web SDK — project ID |
-| `VITE_FIREBASE_APP_ID` | Frontend `.env` | Firebase Web SDK — app ID |
+### Backend `.env`
+
+| Variable | Description |
+|---|---|
+| `PORT` | Express server port |
+| `MONGO_URL` | MongoDB connection string |
+| `JWT_TOKEN` | Secret key for JWT signing |
+| `GROQ_API_KEY` | Groq AI API key |
+| `MCP_SERVER_URL` | MCP Server URL (local or production) |
+
+### Frontend `.env`
+
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Backend API base URL |
+| `VITE_FIREBASE_API_KEY` | Firebase Web SDK API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID |
+| `VITE_FIREBASE_APP_ID` | Firebase app ID |
 
 ---
 
-## 📦 NPM Packages
+## 🚢 Deployment
 
-### Backend
+| Service | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | Set `VITE_API_URL` to backend Render URL |
+| Backend | Render | Set all `.env` variables in dashboard |
+| MCP Server | Render | No env variables needed |
 
-```bash
-npm install express mongoose dotenv bcryptjs jsonwebtoken firebase-admin
-```
-
-### Frontend
-
-```bash
-npm install axios react-router-dom firebase
-```
+> **Important:** Add your Vercel domain to Firebase Console → Authentication → Authorized Domains.
 
 ---
 
@@ -412,17 +400,16 @@ npm install axios react-router-dom firebase
 | Practice | Implementation |
 |---|---|
 | Password hashing | `bcryptjs` — salt rounds: 10 |
-| Email/password tokens | `jsonwebtoken` — returned on login |
-| Google auth | Firebase `signInWithPopup` → ID token verified by `firebase-admin` on backend |
-| Unified session | Both auth methods issue the same JWT |
-| Secure logout | Token saved to `blackList` (MongoDB) + Firebase `auth.signOut()` on client |
+| JWT tokens | `jsonwebtoken` — returned on login |
+| Google auth | Firebase `signInWithPopup` → verified by `firebase-admin` |
+| Secure logout | Token blacklisted in MongoDB + Firebase `signOut()` |
 | Route protection | `auth.middleware.js` on backend + `Protected.jsx` on frontend |
 
 ---
 
 <div align="center">
 
-Made with ❤️ using **MERN Stack** + **Grok AI** + **Firebase**
+Made with ❤️ using **MERN Stack** + **Groq AI** + **MCP** + **Firebase**
 
 ⭐ Star this repo if you found it helpful!
 
