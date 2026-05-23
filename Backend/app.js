@@ -10,7 +10,10 @@ const _dirname = path.resolve()
 
 app.use(cookieParser())
 app.use(cors({
-    origin:"http://localhost:5173",
+   origin: [
+        "http://localhost:5173",
+        "https://ai-debugger-assistant-geyf.vercel.app"  // ← yeh add karo
+    ],
     credentials:true
 }))
 app.use(express.json())
