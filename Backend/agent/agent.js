@@ -15,7 +15,7 @@ const mcpClient = new Client({
 let tool = []
 mcpClient.connect(
     new SSEClientTransport(
-        new URL("http://localhost:4000/sse")
+        new URL(`${process.env.MCP_SERVER_URL}/sse`)
     )
 )
     .then(async () => {
