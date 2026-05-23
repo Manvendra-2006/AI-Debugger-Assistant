@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js"
@@ -180,7 +181,7 @@ app.post(
       }
    }
 )
-app.listen(4000, () => {
+app.listen(process.env.PORT, () => {
 
    console.log(
       "MCP Server running on port 4000"
