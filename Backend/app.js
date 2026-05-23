@@ -12,7 +12,7 @@ app.use(cookieParser())
 app.use(cors({
    origin: [
         "http://localhost:5173",
-        "https://ai-debugger-assistant-geyf.vercel.app"  // ← yeh add karo
+        "https://ai-debugger-assistant-geyf.vercel.app"  
     ],
     credentials:true
 }))

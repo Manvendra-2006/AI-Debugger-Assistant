@@ -79,7 +79,7 @@ Return clear debugging explanations.
         }
        console.log("loop chalakallllllllllllllllll")
         const response = await groq.chat.completions.create({
-            model: "openai/gpt-oss-120b",
+            model: process.env.GROQ_MODEL|| "openai/gpt-oss-120b",
             messages: chatHistory,
             tools: tool.map((tool) => {
                 return {
