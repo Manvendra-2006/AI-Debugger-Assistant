@@ -13,6 +13,11 @@ export async function register({name,email,password}){
 export async function login({email,password}){
     try{
         const response = await api.post("/auth/login",{email,password})
+        // persist token and set authorization header so protected requests work
+        if (response?.data?.token) {
+            try{ window.localStorage.setItem('auth-token', response.data.token) } catch(e){}
+            api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+        }
         return response.data
     }
     catch(error){
@@ -23,6 +28,9 @@ export async function login({email,password}){
 export async function logout(){
     try{
         const response = await api.get("/auth/logout")
+        // clear persisted token and header
+        try{ window.localStorage.removeItem('auth-token') } catch(e){}
+        delete api.defaults.headers.common['Authorization']
         return response.data
     }
     catch(error){
@@ -48,6 +56,10 @@ export async function googleLogin({ uid, name, email, photoURL }) {
             email,
             photoURL
         })
+        if (response?.data?.token) {
+            try{ window.localStorage.setItem('auth-token', response.data.token) } catch(e){}
+            api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+        }
         return response.data
     }
     catch (error) {

@@ -1,18 +1,24 @@
-﻿import { useEffect, useState } from 'react'
+﻿﻿import { useEffect, useState } from 'react'
 import { useDebug } from '../hooks/useDebug'
 import Header from './Header/Header'
 import TheoryExplanation from './TheoryExplanation'
 import { toast } from 'react-toastify'
-
+import { useContext } from 'react'
+import ReactMarkdown from 'react-markdown'
+import { DebugContext } from '../state/debug.context'
 const STORAGE_KEY = 'ai-debugger-state'
 
 const DebugUI = () => {
-  const { loading, handleDebugAI, codeReport, setcodeReport } = useDebug()
+  const context = useContext(DebugContext)
+  const {result} = context
+  const { loading, handleDebugAI, codeReport, setcodeReport,handleZip } = useDebug()
   const [inputCode, setInputCode] = useState('')
   const [view, setView] = useState('input')
   const [error, setError] = useState(null)
   const [copySuccess, setCopySuccess] = useState('')
-
+  const [file,setfile] = useState('')
+  const [prompt,setprompt] = useState('')
+  
   const correctedCode =
     typeof codeReport === 'string'
       ? codeReport
@@ -67,7 +73,13 @@ const DebugUI = () => {
       console.error('Error resetting debug state:', err)
     }
   }
-
+async function handleFile(e){
+  e.preventDefault()
+    const formData = new FormData()
+    formData.append("projectZip", file)
+    formData.append("prompt", prompt)
+    handleZip(formData)
+}
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY)
@@ -316,6 +328,127 @@ const DebugUI = () => {
             </div>
           </section>
         )}
+      </div>
+      <div style={{ marginTop: 28 }}>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div
+            style={{
+              flex: '1 1 360px',
+              background: 'linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.9))',
+              border: '1px solid rgba(148,163,184,0.08)',
+              borderRadius: 16,
+              padding: 18,
+              boxShadow: '0 12px 30px rgba(2,6,23,0.35)',
+            }}
+          >
+            <h3 style={{ margin: 0, color: '#e6eef8' }}>Upload Project ZIP</h3>
+            <p style={{ margin: '6px 0 12px', color: '#9fb0c8', fontSize: 13 }}>Upload a ZIP of your project and an optional prompt.</p>
+
+            <form onSubmit={(e) => handleFile(e)} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <label
+                htmlFor="zip-input"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 12,
+                  padding: '18px 12px',
+                  borderRadius: 12,
+                  border: '2px dashed rgba(99,102,241,0.18)',
+                  background: 'linear-gradient(180deg, rgba(99,102,241,0.03), transparent)',
+                  color: '#cfe8ff',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, color: '#8b5cf6', marginBottom: 6 }}>📦</div>
+                  <div style={{ fontSize: 14 }}>Drag & drop a ZIP here, or</div>
+                  <div style={{ fontSize: 13, color: '#94a3b8' }}>click to choose a file</div>
+                </div>
+              </label>
+
+              <input id="zip-input" type="file" accept='.zip' onChange={() => setfile(event.target.files[0])} style={{ display: 'none' }} />
+
+              <input
+                type="text"
+                placeholder='Enter prompt (optional)'
+                onChange={(event) => setprompt(event.target.value)}
+                value={prompt}
+                style={{
+                  borderRadius: 10,
+                  border: '1px solid rgba(148,163,184,0.08)',
+                  padding: '10px 12px',
+                  background: '#071126',
+                  color: '#e6eef8',
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    borderRadius: 10,
+                    padding: '10px 14px',
+                    background: 'linear-gradient(90deg, #38bdf8, #8b5cf6)',
+                    color: '#041226',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Upload & Analyze
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setfile(''); setprompt('') }}
+                  style={{
+                    border: '1px solid rgba(148,163,184,0.08)',
+                    borderRadius: 10,
+                    padding: '10px 14px',
+                    background: 'transparent',
+                    color: '#cbd5e1',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+
+              {file ? (
+                <div style={{ marginTop: 8, color: '#cbd5e1', fontSize: 13 }}>
+                  Selected: <strong style={{ color: '#e6eef8' }}>{file.name}</strong>
+                </div>
+              ) : (
+                <div style={{ marginTop: 8, color: '#94a3b8', fontSize: 13 }}>No file selected</div>
+              )}
+            </form>
+          </div>
+
+          <div
+            style={{
+              flex: '1 1 420px',
+              background: 'linear-gradient(180deg, rgba(2,6,23,0.9), rgba(8,12,24,0.9))',
+              border: '1px solid rgba(148,163,184,0.06)',
+              borderRadius: 16,
+              padding: 18,
+              boxShadow: '0 12px 28px rgba(2,6,23,0.28)',
+            }}
+          >
+            <h3 style={{ margin: 0, color: '#e6eef8' }}>Analysis Result</h3>
+            <p style={{ margin: '6px 0 12px', color: '#9fb0c8', fontSize: 13 }}>AI response and messages from the server.</p>
+
+            <div style={{ minHeight: 80, maxHeight: 360, overflowY: 'auto', padding: 12, borderRadius: 10, background: '#020617' }}>
+              {result?.message && (
+                <div style={{ marginBottom: 10, color: '#cbd5e1', fontSize: 14 }}>{result.message}</div>
+              )}
+
+              <div style={{ color: '#d1f2ff', lineHeight: 1.5, fontSize: 14 }}>
+                <ReactMarkdown>{result?.aiResponse}</ReactMarkdown>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -29,3 +29,13 @@ export async function getDebugHistory(){
         return []
     }
 }
+export async function zipUpload(formData){
+    try{
+        const response = await api.post("/files",formData)
+        const zipData = response?.data
+        return zipData
+    }
+    catch(error){
+        console.log(error)
+    }
+}
