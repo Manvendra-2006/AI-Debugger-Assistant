@@ -13,17 +13,18 @@ const mcpClient = new Client({
     version: "1.0.0"
 })
 let tool = []
-async function connectMCP(retries = 5) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            await mcpClient.connect(
-                new SSEClientTransport(
-                    new URL(`${process.env.MCP_SERVER_URL}/sse`)
-                )
-            )
-            console.log("MCP is connected")
-            const mcptools = await mcpClient.listTools()
-            tool = mcptools.tools.map((item) => ({
+mcpClient.connect(
+    new SSEClientTransport(
+        new URL(`${process.env.MCP_SERVER_URL}/sse`)
+    )
+)
+    .then(async () => {
+        console.log("MCP is connected")
+        const mcptools = await mcpClient.listTools()
+
+        tool = mcptools.tools.map((item) => {
+
+            return {
                 name: item.name,
                 description: item.description,
                 parameters: {
@@ -31,16 +32,14 @@ async function connectMCP(retries = 5) {
                     properties: item.inputSchema.properties || {},
                     required: item.inputSchema.required || []
                 }
-            }))
-            return
-        } catch (err) {
-            console.log(`MCP attempt ${i + 1} failed, retrying in 5s...`)
-            await new Promise(r => setTimeout(r, 5000))
-        }
-    }
-}
+            }
+        })
 
-connectMCP()
+
+    })
+    .catch((err) => {
+        console.log(err)
+    })
 export default async function agentLoop(prompt, absolutePath) {
     console.log("=== DEBUG ===")
     console.log("extractPath received:", absolutePath)        // kya aa raha hai?
@@ -80,7 +79,7 @@ Return clear debugging explanations.
         }
        console.log("loop chalakallllllllllllllllll")
         const response = await groq.chat.completions.create({
-            model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+            model: "openai/gpt-oss-120b",
             messages: chatHistory,
             tools: tool.map((tool) => {
                 return {
