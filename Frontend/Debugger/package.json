@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.15.2",
     "backend": "file:../..",
     "firebase": "^12.13.0",
@@ -17,7 +18,8 @@
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.14.2",
-    "react-toastify": "^11.1.0"
+    "react-toastify": "^11.1.0",
+    "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

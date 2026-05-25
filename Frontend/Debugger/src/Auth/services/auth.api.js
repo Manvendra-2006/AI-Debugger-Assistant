@@ -7,6 +7,7 @@ export async function register({name,email,password}){
     }
     catch(error){
       console.log("Error Occured",error)
+      throw error
     }
 }
 
@@ -22,6 +23,7 @@ export async function login({email,password}){
     }
     catch(error){
         console.log("Error Ocurred",error)
+        throw error
     }
 }
 
@@ -35,6 +37,7 @@ export async function logout(){
     }
     catch(error){
         console.log("Error Ocurred",error)
+        throw error
     }
 }
 
@@ -45,6 +48,7 @@ export async function getMe(){
     }
     catch(error){
         console.log("Error Occured",error)
+        throw error
     }
 }
 
@@ -64,5 +68,6 @@ export async function googleLogin({ uid, name, email, photoURL }) {
     }
     catch (error) {
         console.log("Error Occured", error)
+        throw error
     }
 }

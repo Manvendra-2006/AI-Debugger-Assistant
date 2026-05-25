@@ -36,6 +36,7 @@ export async function zipUpload(formData){
         return zipData
     }
     catch(error){
-        console.log(error)
+        console.error('ZIP upload failed:', error.response?.data || error.message || error)
+        throw error
     }
 }

@@ -37,11 +37,13 @@ export function useAuth() {
             clearAppStorage()
             
             const data = await login({ email, password })
-            setuser(data.userExists)
-            console.log(data.userExists)
+            const authenticatedUser = data?.userExists ?? data?.userData ?? null
+            setuser(authenticatedUser)
+            return authenticatedUser
         }
         catch (error) {
             console.log(error)
+            throw error
         }
         finally {
             setloading(false)
@@ -55,10 +57,13 @@ export function useAuth() {
             clearAppStorage()
             
             const data = await register({ name, email, password })
-            setuser(data.userData)
+            const authenticatedUser = data?.userData ?? null
+            setuser(authenticatedUser)
+            return authenticatedUser
         }
         catch (error) {
             console.log(error)
+            throw error
         }
         finally {
             setloading(false)
@@ -73,9 +78,11 @@ export function useAuth() {
             
             // Clear all app data on logout
             clearAppStorage()
+            return data
         }
         catch (error) {
             console.log(error)
+            throw error
         }
         finally {
             setloading(false)
@@ -83,27 +90,29 @@ export function useAuth() {
 
     }
     async function handleGoogleLogin({ uid, name, email, photoURL }) {
-    setloading(true)
-    try {
-        clearAppStorage()
+        setloading(true)
+        try {
+            clearAppStorage()
 
-        const data = await googleLogin({
-            uid,
-            name,
-            email,
-            photoURL
-        })
+            const data = await googleLogin({
+                uid,
+                name,
+                email,
+                photoURL
+            })
 
-        setuser(data.userExists)
-        console.log(data.userExists)
+            const authenticatedUser = data?.userExists ?? data?.userData ?? null
+            setuser(authenticatedUser)
+            return authenticatedUser
+        }
+        catch (error) {
+            console.log(error)
+            throw error
+        }
+        finally {
+            setloading(false)
+        }
     }
-    catch (error) {
-        console.log(error)
-    }
-    finally {
-        setloading(false)
-    }
-}
 
     return { user, handleLogin, handleLogout, handleRegister, loading  , handleGoogleLogin}
 }

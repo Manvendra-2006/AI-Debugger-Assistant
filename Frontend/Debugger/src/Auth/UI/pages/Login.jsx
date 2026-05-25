@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { toast } from 'react-toastify'
@@ -6,7 +6,7 @@ import { useFirebase } from '../../../Firebase/FireBaseProvider'
 
 const Login = () => {
     const navigate = useNavigate()
-   const { loading, handleLogin, handleGoogleLogin } = useAuth()
+   const { user, loading, handleLogin, handleGoogleLogin } = useAuth()
    const firebase = useFirebase()
     const [formData, setformData] = useState({
         email: "",
@@ -25,12 +25,16 @@ const Login = () => {
 
         const user = result.user
 
-        await handleGoogleLogin({
+        const authenticatedUser = await handleGoogleLogin({
             uid: user.uid,
             name: user.displayName,
             email: user.email,
             photoURL: user.photoURL
         })
+
+        if (!authenticatedUser) {
+            throw new Error('Google login did not return a valid user.')
+        }
 
         toast.success("Google login successful")
         navigate("/")
@@ -60,6 +64,12 @@ const Login = () => {
             setError('Login failed. Please check your credentials.')
         }
     }
+
+    useEffect(() => {
+        if (!loading && user) {
+            navigate('/')
+        }
+    }, [user, loading, navigate])
 
     if (loading) {
         return (
