@@ -42,7 +42,9 @@ async function connectMCP(retries = 10, delay = 5000) {
     console.log("❌ MCP connection failed after all retries")
 }
 
-connectMCP()
+setTimeout(() => {
+   connectMCP()
+}, 10000)
 export default async function agentLoop(prompt, absolutePath) {
     console.log("=== DEBUG ===")
     console.log("extractPath received:", absolutePath)        // kya aa raha hai?
@@ -58,14 +60,20 @@ export default async function agentLoop(prompt, absolutePath) {
  1. List project files
 2. Search relevant code
 3. Read important files
-4. Run project commands
-5. Analyze runtime logs
+4. Use ONLY the available MCP tools
+5. Never assume terminal access exists
 6. Fix files if needed
 7. Don't debug node_modulus folder
-STRICT RULES:
-- ONLY use the 6 tools listed above
-- NEVER call "container.exec", "bash", or any other tool
-- For running commands use runCommand tool only
+- STRICT RULES:
+- Only use MCP tools returned by listTools()
+- Never invent tools
+- container.exec does NOT exist
+- bash does NOT exist
+- terminal access does NOT exist
+- Docker access does NOT exist
+- Never assume terminal access
+- If a tool is unavailable, continue normally
+- Use ONLY available MCP tools
 IMPORTANT:
 
 You are ONLY allowed to inspect, analyze, read, search, and modify files INSIDE this uploaded project directory:
@@ -96,8 +104,11 @@ If a tool path is outside this directory, ignore it.
             return "Tool call limit reached"
         }
        console.log("loop chalakallllllllllllllllll")
+        if (tool.length === 0) {
+    return "MCP tools are not connected yet. Please try again in a few seconds."
+}
         const response = await groq.chat.completions.create({
-            model: "openai/gpt-oss-120b",
+            model: "llama-3.3-70b-versatile",
             messages: chatHistory,
             tools: tool.map((tool) => {
                 return {
@@ -110,13 +121,26 @@ If a tool path is outside this directory, ignore it.
         })
         console.log("AI CHALALAALLlllllllll")
         const message = response.choices[0].message
-
+        
         chatHistory.push(message) // yaha content isliye nhi kykui already structured format main hin ya fir ye object hain jo ai se aaya hain jisme phele se hi role content hain 
         if (!message.tool_calls || message.tool_calls.length === 0) {
             console.log("Final:", message.content);
             return message.content;
         }
         const toolCall = message.tool_calls?.[0]
+        const allowedTools = tool.map(t => t.name)
+
+if (!allowedTools.includes(toolCall?.function?.name)) {
+    console.log("❌ Invalid tool attempted:", toolCall?.function?.name)
+
+    chatHistory.push({
+        role: "tool",
+        tool_call_id: toolCall.id,
+        content: "Tool does not exist"
+    })
+
+    continue
+}
         console.log(toolCall)
         const toolResult = await Promise.race([
             mcpClient.callTool({
@@ -134,7 +158,9 @@ If a tool path is outside this directory, ignore it.
         chatHistory.push({
             role: "tool",
             tool_call_id: toolCall.id,
-            content: JSON.stringify(toolResult.content[0].text)
+           content: JSON.stringify(
+   toolResult?.content?.[0]?.text || "No tool response"
+)
         });
     }
 }
