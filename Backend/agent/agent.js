@@ -16,6 +16,7 @@ let tool = []
 async function connectMCP(retries = 10, delay = 5000) {
     for (let i = 0; i < retries; i++) {
         try {
+             try { await mcpClient.close() } catch (_) {} 
             await mcpClient.connect(
                 new SSEClientTransport(
                     new URL(`${process.env.MCP_SERVER_URL}/sse`)
