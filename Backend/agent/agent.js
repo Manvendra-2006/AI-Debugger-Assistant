@@ -108,7 +108,7 @@ If a tool path is outside this directory, ignore it.
     return "MCP tools are not connected yet. Please try again in a few seconds."
 }
         const response = await groq.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
+            model: "openai/gpt-oss-120b",
             messages: chatHistory,
             tools: tool.map((tool) => {
                 return {
