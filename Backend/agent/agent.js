@@ -97,7 +97,7 @@ If a tool path is outside this directory, ignore it.
         }
        console.log("loop chalakallllllllllllllllll")
         const response = await groq.chat.completions.create({
-            model: "gpt-oss-120b",
+            model: "llama3-groq-70b-8192-tool-use-preview",
             messages: chatHistory,
             tools: tool.map((tool) => {
                 return {
