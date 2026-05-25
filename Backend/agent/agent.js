@@ -97,7 +97,7 @@ If a tool path is outside this directory, ignore it.
         }
        console.log("loop chalakallllllllllllllllll")
         const response = await groq.chat.completions.create({
-            model: "llama3-groq-70b-8192-tool-use-preview",
+            model: "llama-3.3-70b-versatile",
             messages: chatHistory,
             tools: tool.map((tool) => {
                 return {
@@ -105,7 +105,7 @@ If a tool path is outside this directory, ignore it.
                     function: tool
                 }
             }),
-            tool_choice: 'auto',
+            tool_choice: 'required',
             parallel_tool_calls: false
         })
         console.log("AI CHALALAALLlllllllll")
