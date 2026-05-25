@@ -63,9 +63,24 @@ STRICT RULES:
 - ONLY use the 6 tools listed above
 - NEVER call "container.exec", "bash", or any other tool
 - For running commands use runCommand tool only
-Project path:
+IMPORTANT:
+
+You are ONLY allowed to inspect, analyze, read, search, and modify files INSIDE this uploaded project directory:
+
 ${absolutePath}
-Return clear debugging explanations.
+
+STRICTLY FORBIDDEN:
+- Never access /opt/render/project/src
+- Never inspect backend source code
+- Never inspect AI debugger source code
+- Never inspect parent folders
+- Never inspect system directories
+- Never debug your own AI debugger project
+- Never leave the uploaded project directory
+
+You MUST always use this directory as the root project.
+
+If a tool path is outside this directory, ignore it.
 `
     })
     chatHistory.push({
