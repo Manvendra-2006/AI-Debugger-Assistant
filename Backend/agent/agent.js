@@ -13,18 +13,17 @@ const mcpClient = new Client({
     version: "1.0.0"
 })
 let tool = []
-mcpClient.connect(
-    new SSEClientTransport(
-        new URL(`${process.env.MCP_SERVER_URL}/sse`)
-    )
-)
-    .then(async () => {
-        console.log("MCP is connected")
-        const mcptools = await mcpClient.listTools()
-
-        tool = mcptools.tools.map((item) => {
-
-            return {
+async function connectMCP(retries = 10, delay = 5000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            await mcpClient.connect(
+                new SSEClientTransport(
+                    new URL(`${process.env.MCP_SERVER_URL}/sse`)
+                )
+            )
+            console.log("MCP Connected ✅")
+            const mcptools = await mcpClient.listTools()
+            tool = mcptools.tools.map((item) => ({
                 name: item.name,
                 description: item.description,
                 parameters: {
@@ -32,14 +31,17 @@ mcpClient.connect(
                     properties: item.inputSchema.properties || {},
                     required: item.inputSchema.required || []
                 }
-            }
-        })
+            }))
+            return
+        } catch (err) {
+            console.log(`MCP connect failed (attempt ${i + 1}/${retries}):`, err.message)
+            if (i < retries - 1) await new Promise(r => setTimeout(r, delay))
+        }
+    }
+    console.log("❌ MCP connection failed after all retries")
+}
 
-
-    })
-    .catch((err) => {
-        console.log(err)
-    })
+connectMCP()
 export default async function agentLoop(prompt, absolutePath) {
     console.log("=== DEBUG ===")
     console.log("extractPath received:", absolutePath)        // kya aa raha hai?
