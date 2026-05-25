@@ -135,52 +135,43 @@ server.tool(
 const transports = {}
 app.get("/sse", async (req, res) => {
 
-   const transport =
-      new SSEServerTransport(
-         "/messages",
-         res
-      )
+   const transport = new SSEServerTransport(
+      "/messages",
+      res
+   )
 
-   transports[
-      transport.sessionId
-   ] = transport
+   await server.connect(transport)
+
+   transports[transport.sessionId] = transport
+
+   console.log("Client connected:", transport.sessionId)
 
    res.on("close", () => {
 
-      delete transports[
-         transport.sessionId
-      ]
+      delete transports[transport.sessionId]
+
+      console.log("Client disconnected:", transport.sessionId)
    })
-
-   await server.connect(transport)
 })
-app.post(
-   "/messages",
+app.post("/messages", async (req, res) => {
 
-   async (req, res) => {
+   const sessionId = String(req.query.sessionId)
 
-      const sessionId =
-         req.query.sessionId
+   console.log("Incoming session:", sessionId)
 
-      const transport =
-         transports[sessionId]
+   const transport = transports[sessionId]
 
-      if (transport) {
+   if (transport) {
 
-         await transport
-            .handlePostMessage(
-               req,
-               res
-            )
+      await transport.handlePostMessage(req, res)
 
-      } else {
+   } else {
 
-         res.status(400).send(
-            "No transport found"
-         )
-      }
+      console.log("No transport found for:", sessionId)
+
+      res.status(400).send("No transport found")
    }
-)
+})
 app.listen(process.env.PORT, () => {
 
    console.log(
