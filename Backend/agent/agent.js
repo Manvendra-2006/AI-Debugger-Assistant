@@ -160,6 +160,16 @@ IMPORTANT:
 - If tool fails, continue intelligently
 - If file not found, inspect folder structure first
 - Avoid infinite debugging loops
+TOOL CALL RULES:
+
+- Always call tools using valid JSON arguments
+- Never write XML style tool calls
+- Never write:
+<function=toolName()>
+
+- Always use official tool calling format
+- Always provide ALL required arguments
+- Never leave arguments empty
 `
     })
 
@@ -200,7 +210,8 @@ for (const t of tool) {
         parameters: {
             type: "object",
             properties: t.parameters?.properties || {},
-            required: t.parameters?.required || []
+            required: t.parameters?.required || [],
+            additionalProperties: false
         }
     }
 })
@@ -212,13 +223,13 @@ console.log("TOOLS SENT TO AI:")
 console.log(JSON.stringify(formattedTools, null, 2))
         const response = await groq.chat.completions.create({
 
-            model: "llama-3.3-70b-versatile",
+         model: "openai/gpt-oss-120b",
 
             messages: chatHistory,
 
             tools: formattedTools,
 
-            tool_choice: 'auto',
+           tool_choice: "auto",
 
             parallel_tool_calls: false
         })
@@ -331,9 +342,8 @@ console.log(JSON.stringify(formattedTools, null, 2))
         chatHistory.push({
             role: "tool",
             tool_call_id: toolCall.id,
-            content: JSON.stringify(
-                toolResult?.content?.[0]?.text || "No tool response"
-            )
+           content:
+    toolResult?.content?.[0]?.text || "No tool response"
         })
     }
 }
