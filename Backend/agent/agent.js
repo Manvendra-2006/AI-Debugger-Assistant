@@ -36,7 +36,7 @@ async function connectMCP(retries = 10, delay = 5000) {
             const mcptools = await mcpClient.listTools()
 
             tool = mcptools.tools.map((item) => ({
-                 type: "function", 
+             
                 name: item.name,
                 description: item.description,
                 parameters: {
@@ -200,8 +200,7 @@ for (const t of tool) {
         parameters: {
             type: "object",
             properties: t.parameters?.properties || {},
-            required: t.parameters?.required || [],
-            additionalProperties: false
+            required: t.parameters?.required || []
         }
     }
 })
