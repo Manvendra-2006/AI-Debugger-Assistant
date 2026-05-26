@@ -178,22 +178,33 @@ IMPORTANT:
         if (chatHistory.length > 12) {
             chatHistory.splice(1, chatHistory.length - 12)
         }
-     const formattedTools = tool
-.filter(t => t && t.name)
-.map(t => ({
-    type: "function",
-    function: {
-        name: t.name,
-        description: t.description || "",
-        parameters: {
-            type: "object",
-            properties: t.parameters?.properties || {},
-            required: t.parameters?.required || [],
-            additionalProperties: false
-        }
-    }
-}))
+     const formattedTools = []
 
+for (const t of tool) {
+
+    if (
+        !t ||
+        typeof t.name !== "string" ||
+        !t.name.trim()
+    ) {
+        console.log("❌ INVALID TOOL:", t)
+        continue
+    }
+
+    formattedTools.push({
+        type: "function",
+        function: {
+            name: t.name.trim(),
+            description: t.description || "",
+            parameters: {
+                type: "object",
+                properties: t.parameters?.properties || {},
+                required: t.parameters?.required || [],
+                additionalProperties: false
+            }
+        }
+    })
+}
 console.log("TOOLS SENT TO AI:")
 console.log(JSON.stringify(formattedTools, null, 2))
         const response = await groq.chat.completions.create({
