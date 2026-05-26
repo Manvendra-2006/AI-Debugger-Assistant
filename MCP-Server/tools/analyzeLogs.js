@@ -1,59 +1,44 @@
-export const analyzeLogs = (logs) => {
+import fs from "fs"
+import path from "path"
+
+export default async function listFiles(
+    directorypath
+) {
 
     try {
 
-        let analysis = ""
+        const items =
+            fs.readdirSync(directorypath)
 
-        if(
-            logs.includes("EADDRINUSE")
-        ){
+        const result = []
 
-            analysis =
-            "Port already in use"
+        for (const item of items) {
+
+            const fullPath =
+                path.join(
+                    directorypath,
+                    item
+                )
+
+            const stats =
+                fs.statSync(fullPath)
+
+            result.push({
+                name: item,
+                type: stats.isDirectory()
+                    ? "folder"
+                    : "file"
+            })
         }
 
-        else if(
-            logs.includes("MongoNetworkError")
-        ){
+        return JSON.stringify(
+            result,
+            null,
+            2
+        )
 
-            analysis =
-            "MongoDB connection failed"
-        }
+    } catch (err) {
 
-        else if(
-            logs.includes("JWT")
-        ){
-
-            analysis =
-            "JWT authentication issue detected"
-        }
-
-        else {
-
-            analysis =
-            "No known issue detected"
-        }
-
-        return {
-            content:[
-                {
-                    type:'text',
-                    text:analysis
-                }
-            ]
-        }
-
-    } catch(error){
-
-        return {
-            content:[
-                {
-                    type:'text',
-                    text:error.message
-                }
-            ]
-        }
+        return err.message
     }
 }
-
-// ye tool terminal/runtime logs ko inspect krke ek clear explanation provide karta hain 
