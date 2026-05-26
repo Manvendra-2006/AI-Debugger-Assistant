@@ -1,4 +1,5 @@
 import express from "express"
+import cors from "cors"
 
 import {
     McpServer
@@ -10,36 +11,24 @@ import {
 
 import { z } from "zod"
 
-import listFiles
-from "./tools/listFiles.js"
-
-import readFile
-from "./tools/readFile.js"
-
-import writeFile
-from "./tools/writeFile.js"
-
-import searchCodebase
-from "./tools/searchCodebase.js"
-
-import runCommand
-from "./tools/runCommand.js"
-
-import analyzeLogs
-from "./tools/analyzeLogs.js"
-
-
+import listFiles from "./tools/listFiles.js"
+import readFile from "./tools/readFile.js"
+import writeFile from "./tools/writeFile.js"
+import searchCodebase from "./tools/searchCodebase.js"
+import runCommand from "./tools/runCommand.js"
+import analyzeLogs from "./tools/analyzeLogs.js"
 
 const app = express()
 
-
+app.use(cors())
+app.use(express.json())
 
 const server = new McpServer({
     name: "debug-mcp-server",
     version: "1.0.0"
 })
 
-
+/* ================= TOOLS ================= */
 
 server.tool(
     "listfiles",
@@ -51,15 +40,11 @@ server.tool(
         content: [
             {
                 type: "text",
-                text: await listFiles(
-                    directorypath
-                )
+                text: await listFiles(directorypath)
             }
         ]
     })
 )
-
-
 
 server.tool(
     "readFile",
@@ -71,15 +56,11 @@ server.tool(
         content: [
             {
                 type: "text",
-                text: await readFile(
-                    filepath
-                )
+                text: await readFile(filepath)
             }
         ]
     })
 )
-
-
 
 server.tool(
     "writeFile",
@@ -88,10 +69,7 @@ server.tool(
         filepath: z.string(),
         content: z.string()
     },
-    async ({
-        filepath,
-        content
-    }) => ({
+    async ({ filepath, content }) => ({
         content: [
             {
                 type: "text",
@@ -104,8 +82,6 @@ server.tool(
     })
 )
 
-
-
 server.tool(
     "searchCodebase",
     "Search keyword in project",
@@ -113,32 +89,25 @@ server.tool(
         directoryPath: z.string(),
         keyword: z.string()
     },
-    async ({
-        directoryPath,
-        keyword
-    }) => ({
+    async ({ directoryPath, keyword }) => ({
         content: [
             {
                 type: "text",
-                text:
-                    await searchCodebase(
-                        directoryPath,
-                        keyword
-                    )
+                text: await searchCodebase(
+                    directoryPath,
+                    keyword
+                )
             }
         ]
     })
 )
-
-
 
 server.tool(
     "runCommand",
     "Run terminal command",
     {
         command: z.string(),
-        workingDirectory:
-            z.string()
+        workingDirectory: z.string()
     },
     async ({
         command,
@@ -147,17 +116,14 @@ server.tool(
         content: [
             {
                 type: "text",
-                text:
-                    await runCommand(
-                        command,
-                        workingDirectory
-                    )
+                text: await runCommand(
+                    command,
+                    workingDirectory
+                )
             }
         ]
     })
 )
-
-
 
 server.tool(
     "analyzeLogs",
@@ -169,43 +135,41 @@ server.tool(
         content: [
             {
                 type: "text",
-                text:
-                    await analyzeLogs(
-                        logs
-                    )
+                text: await analyzeLogs(logs)
             }
         ]
     })
 )
 
+/* ================= SSE ================= */
 
+let transport = null
 
 app.get("/sse", async (req, res) => {
 
-    const transport =
-        new SSEServerTransport(
-            "/messages",
-            res
-        )
+    transport = new SSEServerTransport(
+        "/messages",
+        res
+    )
 
-    await server.connect(
-        transport
+    await server.connect(transport)
+})
+
+app.post("/messages", async (req, res) => {
+
+    if (!transport) {
+        return res
+            .status(400)
+            .send("No transport")
+    }
+
+    await transport.handlePostMessage(
+        req,
+        res
     )
 })
 
-
-
-app.post(
-    "/messages",
-    async (req, res) => {
-        res.sendStatus(200)
-    }
-)
-
-
-
 app.listen(4000, () => {
-
     console.log(
         "MCP SERVER RUNNING ON 4000"
     )
