@@ -1,41 +1,63 @@
-import fs from "fs"
-import path from "path"
-
-export default async function listFiles(
-    directorypath
+export default async function analyzeLogs(
+    logs
 ) {
 
     try {
 
-        const items =
-            fs.readdirSync(directorypath)
+        const lower =
+            logs.toLowerCase()
 
-        const result = []
+        if (
+            lower.includes(
+                "module not found"
+            )
+        ) {
 
-        for (const item of items) {
+            return `
+Missing dependency detected.
 
-            const fullPath =
-                path.join(
-                    directorypath,
-                    item
-                )
-
-            const stats =
-                fs.statSync(fullPath)
-
-            result.push({
-                name: item,
-                type: stats.isDirectory()
-                    ? "folder"
-                    : "file"
-            })
+Possible fixes:
+- npm install
+- check import path
+`
         }
 
-        return JSON.stringify(
-            result,
-            null,
-            2
-        )
+        if (
+            lower.includes(
+                "unexpected token"
+            )
+        ) {
+
+            return `
+Syntax error detected.
+
+Check:
+- missing bracket
+- invalid JSX
+- invalid JSON
+`
+        }
+
+        if (
+            lower.includes(
+                "failed to fetch"
+            )
+        ) {
+
+            return `
+Network/API issue detected.
+
+Check:
+- backend running
+- CORS
+- API URL
+`
+        }
+
+        return `
+No specific issue detected.
+Review logs manually.
+`
 
     } catch (err) {
 
