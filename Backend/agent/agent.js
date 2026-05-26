@@ -44,14 +44,11 @@ async function connectMCP() {
 
     try {
 
-        await client.connect(
-            new SSEClientTransport(
-                new URL(
-                    "http://localhost:4000/sse"
-                )
-            )
-        )
-
+       client.connect(
+    new SSEClientTransport(
+        new URL(`${process.env.MCP_SERVER_URL}/sse`)
+    )
+)
         console.log(
             "✅ MCP CONNECTED"
         )
