@@ -44,13 +44,27 @@ async function connectMCP() {
 
     try {
 
-       client.connect(
-    new SSEClientTransport(
-        new URL(`${process.env.MCP_SERVER_URL}/sse`)
-    )
-)
+        await client.connect(
+            new SSEClientTransport(
+                new URL(
+                    `${process.env.MCP_SERVER_URL}/sse`
+                )
+            )
+        )
+
         console.log(
             "✅ MCP CONNECTED"
+        )
+
+        await new Promise(resolve =>
+            setTimeout(resolve, 2000)
+        )
+
+        const toolResult =
+            await client.listTools()
+
+        console.log(
+            toolResult.tools
         )
 
     } catch (err) {
@@ -59,7 +73,8 @@ async function connectMCP() {
             "❌ MCP CONNECTION FAILED"
         )
 
-        console.log(err.message)
+        console.log(err)
+         process.exit(1)
     }
 }
 
