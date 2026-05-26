@@ -11,7 +11,7 @@ import {
 
 import { z } from "zod"
 
-import listFiles from "./tools/listFiles.js"
+import listfiles from "./tools/listfiles.js"
 import readFile from "./tools/readFile.js"
 import writeFile from "./tools/writeFile.js"
 import searchCodebase from "./tools/searchCodebase.js"
