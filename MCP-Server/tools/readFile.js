@@ -1,25 +1,21 @@
-import fs from 'fs'
-export const readFile = (filepath) =>{
-    try{
-        const fileContent = fs.readFileSync(filepath,'utf-8')
-        return{
-            content:[
-                {
-                    type:"text",
-                    text:fileContent
-                }
-            ]
-        }
-    }
-    catch(error){
-        return{
-           content:[
-            {
-                type:"text",
-                text:`${error.message}`
-            }
-           ]
-        }
+import fs from "fs"
+
+export default async function readFile(
+    filepath
+) {
+
+    try {
+
+        const content =
+            fs.readFileSync(
+                filepath,
+                "utf-8"
+            )
+
+        return content
+
+    } catch (err) {
+
+        return err.message
     }
 }
-// this tool is used to read a file 
