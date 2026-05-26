@@ -1,76 +1,92 @@
-import fs from 'fs'
-import path from 'path'
-const IGNORE_FOLDERS = [
-    'node_modules',
-    '.git',
-    'dist',
-    'build',
-    '.next',
-    '.cache'
-]
-const IGNORE_EXTENSIONS = [
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.webp',
-    '.mp4',
-    '.zip',
-    '.exe',
-    '.pdf'
-]
+import fs from "fs"
+import path from "path"
 
-export const searchCodebase = (directoryPath, keyword) => {
-    const results = []
-    function searchFiles(currentPath) {
-        if (!fs.existsSync(currentPath)) return
-        const files = fs.readdirSync(currentPath)
-        for (const file of files) {
-            if (IGNORE_FOLDERS.includes(file)) continue
-            const fullPath = path.join(currentPath, file)
-            let stat
+function searchRecursive(
+    dir,
+    keyword,
+    results = []
+) {
+
+    const ignoreFolders = [
+        "node_modules",
+        ".git",
+        "dist",
+        "build",
+        ".next"
+    ]
+
+    const items =
+        fs.readdirSync(dir)
+
+    for (const item of items) {
+
+        const fullPath =
+            path.join(dir, item)
+
+        const stats =
+            fs.statSync(fullPath)
+
+        if (
+            stats.isDirectory()
+        ) {
+
+            if (
+                ignoreFolders.includes(item)
+            ) continue
+
+            searchRecursive(
+                fullPath,
+                keyword,
+                results
+            )
+
+        } else {
+
             try {
-                stat = fs.statSync(fullPath)
-            } catch {
-                continue
-            }
-            if (stat.isDirectory()) {
-                searchFiles(fullPath)
-            } else {
-                const ext = path.extname(fullPath).toLowerCase()
-                if (IGNORE_EXTENSIONS.includes(ext)) continue
-                try {
-                    if (stat.size > 1024 * 1024) continue
-                    const content = fs.readFileSync(fullPath, 'utf-8')
-                    if (content.includes(keyword)) {
-                        results.push(fullPath)
-                        if (results.length >= 20) break
-                    }
-                } catch (e) {
+
+                const content =
+                    fs.readFileSync(
+                        fullPath,
+                        "utf-8"
+                    )
+
+                if (
+                    content.includes(keyword)
+                ) {
+
+                    results.push(fullPath)
                 }
-            }
+
+            } catch (_) {}
         }
     }
+
+    return results
+}
+
+
+
+export default async function searchCodebase(
+    directoryPath,
+    keyword
+) {
+
     try {
-        searchFiles(directoryPath)
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(results.slice(0, 20))
-                }
-            ]
-        }
 
-    } catch (error) {
+        const results =
+            searchRecursive(
+                directoryPath,
+                keyword
+            )
 
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: error.message
-                }
-            ]
-        }
+        return JSON.stringify(
+            results,
+            null,
+            2
+        )
+
+    } catch (err) {
+
+        return err.message
     }
 }
