@@ -41,7 +41,8 @@ async function connectMCP(retries = 10, delay = 5000) {
                 parameters: {
                     type: 'object',
                     properties: item.inputSchema.properties || {},
-                    required: item.inputSchema.required || []
+                    required: item.inputSchema.required || [],
+                     additionalProperties: false
                 }
             }))
 
@@ -86,37 +87,78 @@ export default async function agentLoop(prompt, absolutePath) {
     let totalCallCount = 0
     chatHistory.push({
         role: "system",
-        content: `
+       content: `
 You are an autonomous AI debugger.
 
 You have access to MCP tools.
 
-Always inspect the project step-by-step.
+Your job is to inspect, debug, and fix uploaded projects carefully.
 
 IMPORTANT RULES:
 
-1. Use ONLY MCP tools returned by listTools()
+1. Use ONLY the provided MCP tools
 2. Never invent tools
 3. Never use container.exec
-4. Never use bash
-5. Never assume terminal exists
+4. Never use bash directly
+5. Never assume Docker access
 6. Never access system folders
-7. Never debug outside uploaded project
-8. Don't inspect node_modules
-9. Never search entire extracted-projects folder
-10. Always stay inside this project root:
+7. Never inspect parent folders
+8. Never inspect backend source code
+9. Never inspect extracted-projects root
+10. Never leave the uploaded project directory
+11. Ignore node_modules, dist, build, .git, .next folders
+12. Avoid reading large unnecessary files
+13. Do not repeatedly read same files
+14. Do not repeatedly search same keywords
+15. Stop debugging once root issue is identified
+
+PROJECT ROOT:
 
 ${absolutePath}
 
+You MUST treat this directory as the ONLY allowed project root.
+
 Allowed workflow:
 
-1. List files
-2. Search relevant code
-3. Read files
-4. Analyze issues
-5. Modify files if needed
+STEP 1:
+List project files.
 
-If tool unavailable, continue debugging normally.
+STEP 2:
+Find actual frontend/backend root.
+Look for:
+- package.json
+- src
+- app
+- pages
+- main.jsx
+- App.jsx
+- server.js
+- index.js
+
+STEP 3:
+Search only relevant files.
+
+STEP 4:
+Read only important files.
+
+STEP 5:
+Analyze issue carefully.
+
+STEP 6:
+Modify files only if necessary.
+
+STEP 7:
+Return concise debugging summary.
+
+IMPORTANT:
+
+- Never scan entire server filesystem
+- Never search extracted-projects globally
+- Never use absolute system paths manually
+- Always work relative to uploaded project
+- If tool fails, continue intelligently
+- If file not found, inspect folder structure first
+- Avoid infinite debugging loops
 `
     })
 
@@ -136,20 +178,21 @@ If tool unavailable, continue debugging normally.
         if (chatHistory.length > 12) {
             chatHistory.splice(1, chatHistory.length - 12)
         }
-        const formattedTools = tool
-    .filter(t => t && t.name)
-    .map(t => ({
-        type: "function",
-        function: {
-            name: t.name,
-            description: t.description || "",
-            parameters: t.parameters || {
-                type: "object",
-                properties: {}
-            },
-            strict: true
+     const formattedTools = tool
+.filter(t => t && t.name)
+.map(t => ({
+    type: "function",
+    function: {
+        name: t.name,
+        description: t.description || "",
+        parameters: {
+            type: "object",
+            properties: t.parameters?.properties || {},
+            required: t.parameters?.required || [],
+            additionalProperties: false
         }
-    }))
+    }
+}))
 
 console.log("TOOLS SENT TO AI:")
 console.log(JSON.stringify(formattedTools, null, 2))
