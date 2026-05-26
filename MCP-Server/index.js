@@ -1,15 +1,34 @@
 import express from "express"
 
-import { McpServer }
-from "@modelcontextprotocol/sdk/server/mcp.js"
+import {
+    McpServer
+} from "@modelcontextprotocol/sdk/server/mcp.js"
 
-import { SSEServerTransport }
-from "@modelcontextprotocol/sdk/server/sse.js"
-
-import fs from "fs"
-import path from "path"
+import {
+    SSEServerTransport
+} from "@modelcontextprotocol/sdk/server/sse.js"
 
 import { z } from "zod"
+
+import listFiles
+from "./tools/listFiles.js"
+
+import readFile
+from "./tools/readFile.js"
+
+import writeFile
+from "./tools/writeFile.js"
+
+import searchCodebase
+from "./tools/searchCodebase.js"
+
+import runCommand
+from "./tools/runCommand.js"
+
+import analyzeLogs
+from "./tools/analyzeLogs.js"
+
+
 
 const app = express()
 
@@ -28,38 +47,16 @@ server.tool(
     {
         directorypath: z.string()
     },
-    async ({ directorypath }) => {
-
-        try {
-
-            const files =
-                fs.readdirSync(directorypath)
-
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(
-                            files,
-                            null,
-                            2
-                        )
-                    }
-                ]
+    async ({ directorypath }) => ({
+        content: [
+            {
+                type: "text",
+                text: await listFiles(
+                    directorypath
+                )
             }
-
-        } catch (err) {
-
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: err.message
-                    }
-                ]
-            }
-        }
-    }
+        ]
+    })
 )
 
 
@@ -70,37 +67,115 @@ server.tool(
     {
         filepath: z.string()
     },
-    async ({ filepath }) => {
-
-        try {
-
-            const content =
-                fs.readFileSync(
-                    filepath,
-                    "utf-8"
+    async ({ filepath }) => ({
+        content: [
+            {
+                type: "text",
+                text: await readFile(
+                    filepath
                 )
-
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: content
-                    }
-                ]
             }
+        ]
+    })
+)
 
-        } catch (err) {
 
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: err.message
-                    }
-                ]
+
+server.tool(
+    "writeFile",
+    "Write/update file",
+    {
+        filepath: z.string(),
+        content: z.string()
+    },
+    async ({
+        filepath,
+        content
+    }) => ({
+        content: [
+            {
+                type: "text",
+                text: await writeFile(
+                    filepath,
+                    content
+                )
             }
-        }
-    }
+        ]
+    })
+)
+
+
+
+server.tool(
+    "searchCodebase",
+    "Search keyword in project",
+    {
+        directoryPath: z.string(),
+        keyword: z.string()
+    },
+    async ({
+        directoryPath,
+        keyword
+    }) => ({
+        content: [
+            {
+                type: "text",
+                text:
+                    await searchCodebase(
+                        directoryPath,
+                        keyword
+                    )
+            }
+        ]
+    })
+)
+
+
+
+server.tool(
+    "runCommand",
+    "Run terminal command",
+    {
+        command: z.string(),
+        workingDirectory:
+            z.string()
+    },
+    async ({
+        command,
+        workingDirectory
+    }) => ({
+        content: [
+            {
+                type: "text",
+                text:
+                    await runCommand(
+                        command,
+                        workingDirectory
+                    )
+            }
+        ]
+    })
+)
+
+
+
+server.tool(
+    "analyzeLogs",
+    "Analyze runtime logs",
+    {
+        logs: z.string()
+    },
+    async ({ logs }) => ({
+        content: [
+            {
+                type: "text",
+                text:
+                    await analyzeLogs(
+                        logs
+                    )
+            }
+        ]
+    })
 )
 
 
@@ -113,18 +188,24 @@ app.get("/sse", async (req, res) => {
             res
         )
 
-    await server.connect(transport)
+    await server.connect(
+        transport
+    )
 })
 
 
 
-app.post("/messages", async (req, res) => {
-    res.sendStatus(200)
-})
+app.post(
+    "/messages",
+    async (req, res) => {
+        res.sendStatus(200)
+    }
+)
 
 
 
 app.listen(4000, () => {
+
     console.log(
         "MCP SERVER RUNNING ON 4000"
     )
