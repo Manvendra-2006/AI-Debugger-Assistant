@@ -136,17 +136,30 @@ If tool unavailable, continue debugging normally.
         if (chatHistory.length > 12) {
             chatHistory.splice(1, chatHistory.length - 12)
         }
+        const formattedTools = tool
+    .filter(t => t && t.name)
+    .map(t => ({
+        type: "function",
+        function: {
+            name: t.name,
+            description: t.description || "",
+            parameters: t.parameters || {
+                type: "object",
+                properties: {}
+            },
+            strict: true
+        }
+    }))
 
+console.log("TOOLS SENT TO AI:")
+console.log(JSON.stringify(formattedTools, null, 2))
         const response = await groq.chat.completions.create({
 
             model: "openai/gpt-oss-120b",
 
             messages: chatHistory,
 
-            tools: tool.map((item) => ({
-                type: 'function',
-                function: item
-            })),
+            tools: formattedTools,
 
             tool_choice: 'auto',
 
