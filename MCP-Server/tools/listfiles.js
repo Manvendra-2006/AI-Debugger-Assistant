@@ -1,26 +1,44 @@
-import fs from 'fs'
-export const listfiles = (directorypath) =>{
-    try{
-        const files = fs.readdirSync(directorypath) // it return array 
-        return {
-            content:[
-                {
-                    type:"text",
-                    text:JSON.stringify(files)
-                }
-            ]
+import fs from "fs"
+import path from "path"
+
+export default async function listFiles(
+    directorypath
+) {
+
+    try {
+
+        const items =
+            fs.readdirSync(directorypath)
+
+        const result = []
+
+        for (const item of items) {
+
+            const fullPath =
+                path.join(
+                    directorypath,
+                    item
+                )
+
+            const stats =
+                fs.statSync(fullPath)
+
+            result.push({
+                name: item,
+                type: stats.isDirectory()
+                    ? "folder"
+                    : "file"
+            })
         }
 
-    }
-    catch(error){
-        return{
-            content:[
-                {
-                    type:"text",
-                    text:`${error.message}`
-                }
-            ]
-        }
+        return JSON.stringify(
+            result,
+            null,
+            2
+        )
+
+    } catch (err) {
+
+        return err.message
     }
 }
-// This tool collect all files and folders names and send it to the AI 
