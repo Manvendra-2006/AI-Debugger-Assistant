@@ -36,6 +36,7 @@ async function connectMCP(retries = 10, delay = 5000) {
             const mcptools = await mcpClient.listTools()
 
             tool = mcptools.tools.map((item) => ({
+                 type: "function", 
                 name: item.name,
                 description: item.description,
                 parameters: {
@@ -212,7 +213,7 @@ console.log("TOOLS SENT TO AI:")
 console.log(JSON.stringify(formattedTools, null, 2))
         const response = await groq.chat.completions.create({
 
-            model: "openai/gpt-oss-120b",
+            model: "llama-3.3-70b-versatile",
 
             messages: chatHistory,
 
