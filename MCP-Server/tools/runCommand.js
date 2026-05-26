@@ -1,26 +1,51 @@
-import { exec } from 'child_process'
+import { exec } from "child_process"
 
-export const runCommand = (command, workingDirectory) => {
+export default async function runCommand(
+    command,
+    workingDirectory
+) {
+
+    const blockedCommands = [
+        "rm -rf",
+        "sudo",
+        "shutdown",
+        "reboot",
+        "mkfs"
+    ]
+
+    for (const blocked of blockedCommands) {
+
+        if (
+            command.includes(blocked)
+        ) {
+
+            return "Blocked dangerous command"
+        }
+    }
+
     return new Promise((resolve) => {
-        exec(command, {
-            cwd: workingDirectory,
-            timeout: 30000,
-            encoding: 'utf-8',
-            maxBuffer: 1024 * 1024,
-            env: { ...process.env }
-        }, (error, stdout, stderr) => {
-            const output = [
-                stdout && `STDOUT:\n${stdout}`,
-                stderr && `STDERR:\n${stderr}`,
-                error && `ERROR:\n${error.message}`
-            ].filter(Boolean).join('\n\n')
 
-            resolve({
-                content: [{
-                    type: 'text',
-                    text: output || 'No output received'
-                }]
-            })
-        })
+        exec(
+            command,
+            {
+                cwd: workingDirectory,
+                timeout: 20000
+            },
+            (error, stdout, stderr) => {
+
+                if (error) {
+
+                    resolve(
+                        error.message
+                    )
+
+                    return
+                }
+
+                resolve(
+                    stdout || stderr
+                )
+            }
+        )
     })
 }
