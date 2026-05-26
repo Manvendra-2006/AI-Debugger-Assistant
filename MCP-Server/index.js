@@ -40,7 +40,7 @@ server.tool(
         content: [
             {
                 type: "text",
-                text: await listFiles(directorypath)
+                text: await listfiles(directorypath)
             }
         ]
     })
@@ -143,34 +143,32 @@ server.tool(
 
 /* ================= SSE ================= */
 
+/* ================= SSE ================= */
 let transport = null
 
 app.get("/sse", async (req, res) => {
-
-    transport = new SSEServerTransport(
-        "/messages",
-        res
-    )
-
+    res.setHeader("Content-Type", "text/event-stream")
+    res.setHeader("Cache-Control", "no-cache")
+    res.setHeader("Connection", "keep-alive")
+    
+    transport = new SSEServerTransport("/messages", res)
+    
+    res.on("close", () => {
+        console.log("SSE client disconnected")
+        transport = null
+    })
+    
     await server.connect(transport)
+    console.log("MCP Client connected via SSE ✅")
 })
 
 app.post("/messages", async (req, res) => {
-
     if (!transport) {
-        return res
-            .status(400)
-            .send("No transport")
+        return res.status(400).send("No active SSE connection")
     }
-
-    await transport.handlePostMessage(
-        req,
-        res
-    )
+    await transport.handlePostMessage(req, res)
 })
 
-app.listen(4000, () => {
-    console.log(
-        "MCP SERVER RUNNING ON 4000"
-    )
+app.listen(process.env.PORT || 4000, () => {
+    console.log(`MCP SERVER RUNNING ON ${process.env.PORT || 4000}`)
 })
