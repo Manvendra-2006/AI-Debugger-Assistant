@@ -181,8 +181,7 @@ app.post(
    }
 )
 app.listen(4000, () => {
-
-   console.log(
-      "MCP Server running on port 4000"
-   )
+   console.log("MCP Server running on port 4000")
+}).on("error", (err) => {
+   console.log("Server Error:", err)
 })

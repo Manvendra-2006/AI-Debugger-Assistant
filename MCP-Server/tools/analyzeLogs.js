@@ -55,3 +55,5 @@ export const analyzeLogs = (logs) => {
         }
     }
 }
+
+// ye tool terminal/runtime logs ko inspect krke ek clear explanation provide karta hain 
