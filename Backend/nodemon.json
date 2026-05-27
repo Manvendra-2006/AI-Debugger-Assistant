@@ -1,6 +1,6 @@
 {
-  "ignore": [
-    "uploads/**",
-    "extracted-projects/**"
-  ]
+"ignore": [
+"uploads/*",
+"extracted-projects/*"
+]
 }
