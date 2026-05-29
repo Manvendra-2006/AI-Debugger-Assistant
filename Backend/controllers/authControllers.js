@@ -67,7 +67,12 @@ export async function Login(req, resp) {
             { expiresIn: "7d" }
         )
 
-       resp.cookie("token", token)
+       res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+})
 
         return resp.status(200).json({
             message: "Login Successfully",
@@ -111,7 +116,12 @@ export async function googleAuthController(req, resp) {
             { expiresIn: "7d" }
         )
 
-resp.cookie("token", token)
+res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+})
 
         return resp.status(200).json({
             message: "Google Login Successfully",
@@ -132,7 +142,11 @@ export async function LogoutController(req,resp){
         }
         const blacklistData = await blackList.create({token})        
         if(blacklistData){
-         resp.clearCookie("token")
+    res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None"
+})
             return resp.status(200).json({message:"Logged out successfully"})
         }
     }
