@@ -17,7 +17,7 @@ const Header = () => {
   const name = user?.name || 'No name provided'
 
   return (
-    <header className="flex flex-wrap justify-between items-center gap-4 mb-8 px-6 py-5 bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl shadow-black/40">
+    <header className="relative z-40 flex flex-wrap justify-between items-center gap-4 mb-8 px-6 py-5 bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl shadow-black/40">
 
       {/* Left — branding & tagline */}
       <div className="flex-1 min-w-[260px] text-white">
@@ -53,7 +53,7 @@ const Header = () => {
 
         {/* Dropdown */}
         {showDetails && (
-          <div className="absolute right-0 top-full mt-4 w-[300px] bg-slate-950 border border-slate-700/50 rounded-2xl p-5 shadow-2xl shadow-black/50 z-10">
+          <div className="absolute right-0 top-full mt-4 w-[300px] bg-slate-950 border border-slate-700/50 rounded-2xl p-5 shadow-2xl shadow-black/50 z-50">
 
             {/* Dropdown header */}
             <div className="flex items-center justify-between gap-3 mb-5">
