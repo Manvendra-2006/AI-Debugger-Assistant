@@ -4,14 +4,24 @@ export const runCommand = (command, workingDirectory) => {
     return new Promise((resolve) => {
         exec(command, {
             cwd: workingDirectory,
-            timeout: 8000,           // ✅ 8 second mein band
+            timeout: 8000,
             encoding: 'utf-8',
-            maxBuffer: 1024 * 512    // ✅ 512KB output limit
+            maxBuffer: 1024 * 512
         }, (error, stdout, stderr) => {
+            
+            // ✅ YEH FILTER ADD KAR
+            const rawOutput = stdout || stderr || error?.message || 'No output'
+            const filteredOutput = rawOutput
+                .split('\n')
+                .filter(line => !line.includes('node_modules'))
+                .filter(line => !line.includes('package-lock.json'))
+                .filter(line => !line.includes('.git'))
+                .join('\n')
+
             resolve({
                 content: [{
                     type: 'text',
-                    text: stdout || stderr || error?.message || 'No output'
+                    text: filteredOutput
                 }]
             })
         })
