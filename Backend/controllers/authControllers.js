@@ -2,7 +2,7 @@ import User from "../models/User.js"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import blackList from "../models/blackList.js"
-// import sendRegistrationEmail from "../services/email.service.js"
+import sendRegistrationEmail from "../services/email.service.js"
 export async function SignUp(req, resp) {
     try {
         const { name, email, password } = req.body
@@ -24,8 +24,14 @@ export async function SignUp(req, resp) {
             authProvider: "local"
         })
 
-        // await sendRegistrationEmail(email, name)
-
+      
+        const token = jwt.sign(
+            { id: userData._id, name: userData.name },
+            process.env.JWT_TOKEN,
+            { expiresIn: "7d" }
+        )
+       resp.cookie("token", token)
+         await sendRegistrationEmail(email, name)
         return resp.status(201).json({
             message: "User registered Successfully",
             userData
@@ -67,12 +73,7 @@ export async function Login(req, resp) {
             { expiresIn: "7d" }
         )
 
-       res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000
-})
+       resp.cookie("token", token)
 
         return resp.status(200).json({
             message: "Login Successfully",
@@ -116,13 +117,9 @@ export async function googleAuthController(req, resp) {
             { expiresIn: "7d" }
         )
 
-res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000
-})
+resp.cookie("token", token)
 
+        await sendRegistrationEmail(email, name)
         return resp.status(200).json({
             message: "Google Login Successfully",
             token,
@@ -142,11 +139,7 @@ export async function LogoutController(req,resp){
         }
         const blacklistData = await blackList.create({token})        
         if(blacklistData){
-    res.clearCookie("token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None"
-})
+         resp.clearCookie("token")
             return resp.status(200).json({message:"Logged out successfully"})
         }
     }
