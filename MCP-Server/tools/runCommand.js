@@ -9,7 +9,7 @@ export const runCommand = (command, workingDirectory) => {
             maxBuffer: 1024 * 512
         }, (error, stdout, stderr) => {
             
-            // ✅ YEH FILTER ADD KAR
+         
             const rawOutput = stdout || stderr || error?.message || 'No output'
             const filteredOutput = rawOutput
                 .split('\n')
