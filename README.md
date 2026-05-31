@@ -488,18 +488,6 @@ npm run dev
 
 ---
 
-## 🚢 Deployment
-
-| Service | Platform | Notes |
-|---|---|---|
-| Frontend | Vercel | Set `VITE_API_URL` to backend Render URL |
-| Backend | Render | Set all `.env` variables including Gmail OAuth2 |
-| MCP Server | Render | No env variables needed |
-
-> **Important:** Add your Vercel domain to Firebase Console → Authentication → Authorized Domains.
-
----
-
 ## 🔒 Security Summary
 
 | Practice | Implementation |
